@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encryption Tool - GraalOnline Style</title>
+    <style>
+        /* GraalOnline inspired dark mode theme */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #0a1e12; /* Dark greenish */
+            color: #cfd8dc; /* Light silver/gray text */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #container {
+            background-color: #10261f; /* Dark green */
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 600px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #09e7b9; /* Bright cyan header */
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            font-weight: bold;
+        }
+
+        .input-group input, .input-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #4caf50; /* Light green border */
+            border-radius: 5px;
+            background-color: #1e3c2b; /* Darker green for input background */
+            color: #e0f7fa; /* Light cyan text */
+            margin-top: 5px;
+        }
+
+        #output, #history, #file-output {
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #2d4e3e; /* Medium green background for outputs */
+            margin-top: 15px;
+            overflow-wrap: break-word;
+            color: #e0f7fa; /* Text in light cyan */
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            background-color: #09e7b9; /* Cyan-green button */
+            color: #fff;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        #pass-strength {
+            font-size: 14px;
+            margin-top: 5px;
+            text-align: right;
+            color: #e0f7fa;
+        }
+
+        #theme-toggle {
+            float: right;
+            margin-top: -10px;
+        }
+
+        #help {
+            margin-top: 20px;
+            font-size: 14px;
+            background-color: #1e3c2b;
+            padding: 10px;
+            border-radius: 5px;
+            color: #cfd8dc; /* Lighter gray text */
+        }
+
+        #history {
+            font-size: 12px;
+            color: #b2ebf2; /* Light cyan history text */
+        }
+
+        /* Light mode styles */
+        body.light-mode {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        body.light-mode #container {
+            background-color: #fff;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        body.light-mode .input-group input, body.light-mode .input-group textarea {
+            background-color: #eee;
+            color: #333;
+        }
+
+        body.light-mode #output, body.light-mode #history, body.light-mode #file-output {
+            background-color: #efefef;
+        }
+
+        body.light-mode .btn {
+            background-color: #09e7b9;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <h1>GraalOnline Encryption Tool</h1>
+        <div class="input-group">
+            <label for="inputText">Text to Encrypt/Decrypt</label>
+            <textarea id="inputText" rows="4" placeholder="Enter text..."></textarea>
+        </div>
+        <div class="input-group">
+            <label for="passphrase">Passphrase</label>
+            <input type="text" id="passphrase" placeholder="Enter passphrase...">
+            <div id="pass-strength">Strength: Weak</div>
+        </div>
+
+        <button class="btn" onclick="encryptText()">Encrypt</button>
+        <button class="btn" onclick="decryptText()">Decrypt</button>
+
+        <div class="input-group">
+            <label for="output">Output</label>
+            <div id="output"></div>
+        </div>
+
+        <div class="input-group">
+            <label for="fileUpload">Upload a file</label>
+            <input type="file" id="fileUpload">
+            <div id="file-output"></div>
+        </div>
+
+        <button class="btn" onclick="downloadFile()">Download Encrypted Text</button>
+
+        <div id="history">
+            <h3>History:</h3>
+            <ul id="history-list"></ul>
+        </div>
+
+        <div id="help">
+            <h3>Need Help?</h3>
+            <p>Enter the text to encrypt or decrypt, along with a passphrase. Click "Encrypt" to get the encrypted result, or "Decrypt" to reverse the process.</p>
+        </div>
+
+        <button class="btn" id="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
+    </div>
+
+    <script>
+        // Passphrase Strength Meter
+        const passphraseInput = document.getElementById('passphrase');
+        const passStrength = document.getElementById('pass-strength');
+
+        passphraseInput.addEventListener('input', function() {
+            const strength = getPassphraseStrength(passphraseInput.value);
+            passStrength.textContent = `Strength: ${strength}`;
+        });
+
+        function getPassphraseStrength(pass) {
+            if (pass.length < 6) return 'Weak';
+            if (pass.length < 10) return 'Moderate';
+            return 'Strong';
+        }
+
+        // Encryption Functionality
+        function encryptText() {
+            const inputText = document.getElementById('inputText').value;
+            const passphrase = document.getElementById('passphrase').value;
+            if (!inputText || !passphrase) {
+                alert('Please enter both text and a passphrase.');
+                return;
+            }
+            const encrypted = btoa(inputText); // Simulated encryption for demo
+            document.getElementById('output').textContent = encrypted;
+            addToHistory('Encrypted', inputText);
+        }
+
+        function decryptText() {
+            const inputText = document.getElementById('inputText').value;
+            const passphrase = document.getElementById('passphrase').value;
+            if (!inputText || !passphrase) {
+                alert('Please enter both text and a passphrase.');
+                return;
+            }
+            try {
+                const decrypted = atob(inputText); // Simulated decryption for demo
+                document.getElementById('output').textContent = decrypted;
+                addToHistory('Decrypted', inputText);
+            } catch {
+                alert('Invalid encrypted text.');
+            }
+        }
+
+        // History Logging
+        const historyList = document.getElementById('history-list');
+
+        function addToHistory(type, text) {
+            const listItem = document.createElement('li');
+            listItem.textContent = `${type}: ${text}`;
+            historyList.appendChild(listItem);
+        }
+
+        // Theme Toggle
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+        }
+
+        // File Upload/Download
+        function downloadFile() {
+            const output = document.getElementById('output').textContent;
+            const blob = new Blob([output], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'encrypted_text.txt';
+            link.click();
+        }
+    </script>
+</body>
+</html>
